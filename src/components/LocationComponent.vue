@@ -1,8 +1,8 @@
 <template>
-  <div class="locationContainer">
+  <div class="locationContainer" :style="{ borderColor: props.borderAlarmColor }">
     <div class="locationContent">
-      <div>Location : {{ locationExample.name }}</div>
-      <div>Last Alarm: 2023-03-06T09:03:35.4039083Z</div>
+      <div>Location : {{ props.locationExample.name }}</div>
+      <div>Last Alarm: {{ props.locationExample.lastAlarm }}</div>
     </div>
   </div>
 </template>
@@ -11,11 +11,12 @@
 import type { Location } from '@/types/Location'
 import { ref } from 'vue'
 
-const locationExample: Location = {
-  uuid: '2a3e4f8d-9786-4c7b-b47e-4fa8f915194c',
-  name: 'Kolding - Jernbanegade',
-  lastAlarm: 'Never triggered'
-}
+const props = defineProps<{
+  locationExample: Location
+  borderAlarmColor: string
+}>()
+
+console.log(props.borderAlarmColor)
 
 const test = ref()
 /*
@@ -40,6 +41,8 @@ fetch(import.meta.env.VITE_API_GET_URL, {
   border: solid;
   align-items: center;
   margin: 8px 6px 8px 6px;
+  border-radius: 4px;
+  background-color: rgb(242, 242, 242);
 }
 .locationContent {
   padding: 6px;
