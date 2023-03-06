@@ -26,6 +26,11 @@ const triggerAlarm = (location: Location): string => {
   locationAlarms.forEach((locationAlarm) =>
     locationAlarm.uuid == location.uuid ? (abc = ' red') : (abc = ' black')
   )
+  /*
+  disabled untill needed
+  var audio = new Audio('public/warning.mp3')
+  audio.play()*/
+
   return abc
 }
 const locationExamples: Location[] = [
