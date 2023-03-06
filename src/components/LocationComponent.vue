@@ -1,19 +1,27 @@
 <template>
-  <div>yo</div>
+  <div></div>
 </template>
 
 <script setup lang="ts">
-import type { Location } from '@/types/Location'
+/*import type { Location } from '@/types/Location'
+import { ref } from 'vue'
 
-/*const locationExample: Location = {
+const locationExample: Location = {
 
-}*/
-
-const getLocations = async () => {
-  fetch('https://alarm-dev.beautycos.dk/Api/Location/GetLocations', {
-    method: 'GET'
-  })
 }
+const test = ref()
+
+console.log(test.value)
+
+fetch(import.meta.env.VITE_API_GET_URL, {
+  method: 'GET',
+  headers: {
+    Authorization: 'XApiKey: ' + import.meta.env.VITE_API_KEY
+  }
+})
+  .then((response) => response.json())
+  .then((data) => (test.value = data))
+  */
 </script>
 
 <style lang="scss"></style>
