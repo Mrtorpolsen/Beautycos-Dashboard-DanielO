@@ -1,6 +1,8 @@
 <template>
   <div class="dashboardContainer">
-    <LocationComponent></LocationComponent>
+    <div v-for="(n, index) in 10" :key="index">
+      <LocationComponent></LocationComponent>
+    </div>
   </div>
 </template>
 
@@ -10,9 +12,12 @@ import LocationComponent from './LocationComponent.vue'
 
 <style lang="scss">
 .dashboardContainer {
-  width: 1024px;
+  width: fit-content;
   background-color: lightgrey;
   border-radius: 4px;
-  height: 500px;
+  height: fit-content;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
 }
 </style>
