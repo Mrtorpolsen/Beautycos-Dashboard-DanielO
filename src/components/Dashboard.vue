@@ -1,11 +1,14 @@
 <template>
   <div class="dashboardContainer">
     <div v-for="(location, index) in locations" :key="index">
-      <LocationComponent
-        :location="location"
-        :alarm-active="location.alarmActive"
-        @toggle-alarm="location.alarmActive = $event"
-      ></LocationComponent>
+      <Suspense>
+        <LocationComponent
+          :location="location"
+          :alarm-active="(location.alarmActive as boolean)"
+          @update:toggle-alarm="location.alarmActive = $event"
+          @update:location="getLocations"
+        ></LocationComponent>
+      </Suspense>
     </div>
   </div>
 </template>
@@ -13,27 +16,84 @@
 <script setup lang="ts">
 import LocationComponent from './LocationComponent.vue'
 import type { Location } from '@/types/Location'
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 
-let locations = ref<Location[]>()
+const locations = ref<Location[]>()
+const UtcTime = ref<string>()
+const alarmActiveLocations = ref<Location[]>()
 
-fetch('/Api/Location/GetLocations', {
-  method: 'GET',
-  headers: {
-    XApiKey: import.meta.env.VITE_API_KEY
+const getUtcTime = async () => {
+  try {
+    const response = await fetch('/Api/Location/GetUtcNow', {
+      method: 'GET',
+      headers: {
+        XApiKey: import.meta.env.VITE_API_KEY
+      }
+    })
+    const result = await response.json()
+    UtcTime.value = result
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const getLocations = async () => {
+  const response = await fetch('/Api/Location/GetLocations', {
+    method: 'GET',
+    headers: {
+      XApiKey: import.meta.env.VITE_API_KEY
+    }
+  })
+  const data = await response.json()
+
+  locations.value = data
+}
+const lisentForAlarm = async () => {
+  try {
+    if (UtcTime.value == undefined) {
+      console.time()
+      await getUtcTime()
+      console.timeEnd()
+    }
+
+    const response = await fetch('/Api/Location/LongPull?last_pull=' + UtcTime.value, {
+      method: 'POST',
+      headers: {
+        XApiKey: import.meta.env.VITE_API_KEY,
+        'Content-Type': 'application/json; charset=utf-8'
+      }
+    })
+    const data = await response.json()
+
+    alarmActiveLocations.value = data.locations
+    //updates pull time
+    UtcTime.value = data.nextLastPull
+
+    console.log(data)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+lisentForAlarm()
+
+const interval = setInterval(lisentForAlarm, 10000)
+
+watchEffect(() => {
+  if (alarmActiveLocations.value) {
+    console.log(alarmActiveLocations.value)
+    locations.value?.map(
+      (location) =>
+        (location.alarmActive = alarmActiveLocations.value?.some(
+          (alarmActiveLocation) => location.uuid == alarmActiveLocation.uuid
+        ))
+    )
   }
 })
-  .then((response) => response.json())
-  .then((data) => {
-    locations.value = data
-    locations.value?.push({
-      uuid: '1',
-      lastAlarm: '000',
-      name: 'hej',
-      alarmActive: true
-    })
-    console.log(locations.value)
-  })
+
+onMounted(getLocations)
+
+onUnmounted(() => clearInterval(interval))
 </script>
 
 <style lang="scss">

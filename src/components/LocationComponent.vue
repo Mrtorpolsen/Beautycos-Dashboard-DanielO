@@ -22,12 +22,13 @@ const props = defineProps<{
   alarmActive: boolean
 }>()
 
-const emit = defineEmits(['toggleAlarm'])
+const emit = defineEmits(['update:toggleAlarm', 'update:location'])
 
 const toggleAlarm = computed({
   get: () => props.alarmActive ?? false,
   set: () => {
-    emit('toggleAlarm', false)
+    emit('update:toggleAlarm', false)
+    emit('update:location')
   }
 })
 </script>
@@ -63,7 +64,6 @@ const toggleAlarm = computed({
   0% {
     transform: scale(1);
   }
-
   100% {
     transform: scale(1.1);
   }
