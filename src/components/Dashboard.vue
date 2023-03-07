@@ -21,6 +21,7 @@ import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 const locations = ref<Location[]>()
 const UtcTime = ref<string>()
 const alarmActiveLocations = ref<Location[]>()
+const interval = ref<number>()
 
 const getUtcTime = async () => {
   try {
@@ -66,6 +67,12 @@ const lisentForAlarm = async () => {
     const data = await response.json()
 
     alarmActiveLocations.value = data.locations
+    locations.value?.map(
+      (location) =>
+        (location.alarmActive = alarmActiveLocations.value?.some(
+          (alarmActiveLocation) => location.uuid == alarmActiveLocation.uuid
+        ))
+    )
     //updates pull time
     UtcTime.value = data.nextLastPull
 
@@ -75,25 +82,15 @@ const lisentForAlarm = async () => {
   }
 }
 
-lisentForAlarm()
+onMounted(() => {
+  getLocations()
 
-const interval = setInterval(lisentForAlarm, 10000)
+  lisentForAlarm()
 
-watchEffect(() => {
-  if (alarmActiveLocations.value) {
-    console.log(alarmActiveLocations.value)
-    locations.value?.map(
-      (location) =>
-        (location.alarmActive = alarmActiveLocations.value?.some(
-          (alarmActiveLocation) => location.uuid == alarmActiveLocation.uuid
-        ))
-    )
-  }
+  interval.value = setInterval(lisentForAlarm, 10000)
 })
 
-onMounted(getLocations)
-
-onUnmounted(() => clearInterval(interval))
+onUnmounted(() => clearInterval(interval.value))
 </script>
 
 <style lang="scss">
