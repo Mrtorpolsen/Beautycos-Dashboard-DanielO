@@ -1,7 +1,11 @@
 <template>
   <div class="dashboardContainer">
     <div v-for="(location, index) in locations" :key="index">
-      <LocationComponent :location="location"></LocationComponent>
+      <LocationComponent
+        :location="location"
+        :alarm-active="location.alarmActive"
+        @toggle-alarm="location.alarmActive = $event"
+      ></LocationComponent>
     </div>
   </div>
 </template>
@@ -11,7 +15,7 @@ import LocationComponent from './LocationComponent.vue'
 import type { Location } from '@/types/Location'
 import { computed, ref } from 'vue'
 
-const locations = ref<Location[]>()
+let locations = ref<Location[]>()
 
 fetch('/Api/Location/GetLocations', {
   method: 'GET',
@@ -20,9 +24,16 @@ fetch('/Api/Location/GetLocations', {
   }
 })
   .then((response) => response.json())
-  .then((data) => (locations.value = data))
-
-console.log(locations.value)
+  .then((data) => {
+    locations.value = data
+    locations.value?.push({
+      uuid: '1',
+      lastAlarm: '000',
+      name: 'hej',
+      alarmActive: true
+    })
+    console.log(locations.value)
+  })
 </script>
 
 <style lang="scss">
