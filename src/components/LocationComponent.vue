@@ -1,13 +1,15 @@
 <template>
   <div class="locationContainerAlarm" v-if="toggleAlarm" @click="toggleAlarm = false">
     <div class="locationContent">
-      <div>Location : {{ props.location.name }}</div>
+      <div v-if="props.location.name == null">Location : {{ props.location.uuid }}</div>
+      <div v-else>Location : {{ props.location.name }}</div>
       <div>Last Alarm : {{ props.location.lastAlarm }}</div>
     </div>
   </div>
   <div class="locationContainer" v-else>
     <div class="locationContent">
-      <div>Location : {{ props.location.name }}</div>
+      <div v-if="props.location.name == null">Location : {{ props.location.uuid }}</div>
+      <div v-else>Location : {{ props.location.name }}</div>
       <div>Last Alarm : {{ props.location.lastAlarm }}</div>
     </div>
   </div>
@@ -15,7 +17,7 @@
 
 <script setup lang="ts">
 import type { Location } from '@/types/Location'
-import { computed, ref } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 
 const props = defineProps<{
   location: Location
@@ -24,11 +26,27 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:toggleAlarm', 'update:location'])
 
+const alarmAudio = new Audio('/warning.mp3')
+const interval = ref<number>()
+
 const toggleAlarm = computed({
   get: () => props.alarmActive ?? false,
   set: () => {
     emit('update:toggleAlarm', false)
     emit('update:location')
+  }
+})
+
+const playAlarm = () => {
+  alarmAudio.play()
+}
+
+watchEffect(() => {
+  if (props.alarmActive == true) {
+    interval.value = setInterval(playAlarm, 2000)
+  }
+  if (props.alarmActive == false) {
+    clearInterval(interval.value)
   }
 })
 </script>

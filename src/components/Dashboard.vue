@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import LocationComponent from './LocationComponent.vue'
 import type { Location } from '@/types/Location'
-import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const locations = ref<Location[]>()
 const UtcTime = ref<string>()
@@ -39,22 +39,26 @@ const getUtcTime = async () => {
 }
 
 const getLocations = async () => {
-  const response = await fetch('/Api/Location/GetLocations', {
-    method: 'GET',
-    headers: {
-      XApiKey: import.meta.env.VITE_API_KEY
-    }
-  })
-  const data = await response.json()
+  //Need to use transform and set alarmLocation to false, and also if name is null.
+  //This way i wont have to do it in Location
+  try {
+    const response = await fetch('/Api/Location/GetLocations', {
+      method: 'GET',
+      headers: {
+        XApiKey: import.meta.env.VITE_API_KEY
+      }
+    })
+    const data = await response.json()
 
-  locations.value = data
+    locations.value = data
+  } catch (e) {
+    console.error(e)
+  }
 }
 const lisentForAlarm = async () => {
   try {
     if (UtcTime.value == undefined) {
-      console.time()
       await getUtcTime()
-      console.timeEnd()
     }
 
     const response = await fetch('/Api/Location/LongPull?last_pull=' + UtcTime.value, {
@@ -65,7 +69,8 @@ const lisentForAlarm = async () => {
       }
     })
     const data = await response.json()
-
+    //Need to look into this, so that multiple alarms can be active at once.
+    //sets alarm active to true, if a match is found in alarmActiveLocations
     alarmActiveLocations.value = data.locations
     locations.value?.map(
       (location) =>
@@ -87,7 +92,7 @@ onMounted(() => {
 
   lisentForAlarm()
 
-  interval.value = setInterval(lisentForAlarm, 10000)
+  interval.value = setInterval(lisentForAlarm, 5000)
 })
 
 onUnmounted(() => clearInterval(interval.value))
