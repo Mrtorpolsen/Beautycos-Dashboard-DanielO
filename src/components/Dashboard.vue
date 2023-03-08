@@ -38,9 +38,9 @@ const getUtcTime = async () => {
   }
 }
 
+//Should use transform and set alarmLocation to false, and also check if name is null.
+//This way i wont have to do it in Location
 const getLocations = async () => {
-  //Need to use transform and set alarmLocation to false, and also if name is null.
-  //This way i wont have to do it in Location
   try {
     const response = await fetch('/Api/Location/GetLocations', {
       method: 'GET',
